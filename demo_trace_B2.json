@@ -1,0 +1,34 @@
+{
+  "case_id": "B2",
+  "question": "Tra timeline Vercel incident sps6n39gm4sg: thông báo nào nói các build GitHub-connected vẫn lỗi do upstream? Theo dữ liệu bạn đọc, có thể xác nhận sự cố đó đang xảy ra không? Dẫn nguồn.",
+  "expected": "Incident resolved. Phải xem nhiều trang timeline: update offset 3 ngày 2026-10-12 16:10 UTC nói GitHub-connected builds vẫn lỗi do upstream GitHub và dẫn GitHub status; đây là incident lịch sử không khẳng định đang diễn ra; cite Vercel.",
+  "score": 99,
+  "tools": [
+    [
+      1,
+      "get_vercel_status",
+      "{}"
+    ],
+    [
+      1,
+      "get_incident_details",
+      "{\"provider\": \"vercel\", \"incident_id\": \"sps6n39gm4sg\", \"offset\": 0, \"limit\": 3}"
+    ],
+    [
+      2,
+      "get_incident_details",
+      "{\"incident_id\": \"sps6n39gm4sg\", \"offset\": 3, \"provider\": \"vercel\", \"limit\": 3}"
+    ],
+    [
+      3,
+      "get_incident_details",
+      "{\"incident_id\": \"93njd414rpbx\", \"limit\": 3, \"offset\": 0, \"provider\": \"github\"}"
+    ],
+    [
+      3,
+      "get_github_status",
+      "{}"
+    ]
+  ],
+  "answer": "## Câu trả lời ngắn\n\nThông báo bạn hỏi là update **\"identified\" lúc 2026-10-12T16:10:48Z** của incident Vercel `sps6n39gm4sg` (\"Increased build and deployment failures\").\n\n**Không thể xác nhận sự cố đó đang xảy ra** — theo dữ liệu đã đọc, cả hai phía đều đã resolved từ ngày 12/10/2026, và trạng thái hiện tại là \"All Systems Operational\". Câu \"vẫn lỗi\" chỉ đúng tại thời điểm 16:10Z ngày 12/10, không đúng ở hiện tại.\n\n## Trích nguyên văn thông báo\n\n- **status:** `identified` — **2026-10-12T16:10:48.923Z**\n- **nội dung:** \"We are continuing to work on a fix. Due to an upstream incident at GitHub (https://www.githubstatus.com/incidents/93njd414rpbx), some builds and deployments for GitHub-connected projects are still failing.\"\n- **nguồn:** https://stspg.io/cfrfjg8fqxfr (incident Vercel, components: Builds, Git Integrations)\n\n## Bối cảnh timeline Vercel (đã đọc 6/7 updates, offset 0–5)\n\n| Thời điểm (UTC) | Status | Nội dung chính |\n|---|---|---|\n| 12/10 13:35:07 | (created) | Incident bắt đầu |\n| 12/10 14:08:54 | identified | Đã xác định issue, đang sửa |\n| 12/10 14:57:41 | identified | Tỉ lệ fail giảm, một số build còn xếp hàng |\n| **12/10 16:10:48** | **identified** | **Build/deploy của project nối GitHub vẫn fail do upstream GitHub** |\n| 12/10 18:33:36 | identified | Deployment events (cập nhật status lên PR) bị trễ, đang xử lý backlog |\n| 12/10 19:56:56 | monitoring | Backlog đã xử lý xong, tiếp tục theo dõi |\n| 12/10 20:11:12 | resolved | \"This incident has been resolved.\" |\n\nTôi **chưa đọc** update ở `offset=6` (update sớm nhất, `next_offset` còn lại = 6), nên không khẳng định đã xem toàn bộ 7 updates.\n\n## Kiểm chứng phía upstream (GitHub)\n\n- Incident GitHub được Vercel dẫn chiếu: `93njd414rpbx` — \"Incident with Actions, Pull Requests and Issues\", components Issues/Pull Requests/Actions.\n- **created:** 2026-10-12T12:21:47Z → **updated/resolved:** 2026-10-12T20:16:07Z. Update resolved nêu: GitHub gặp elevated 500 responses từ 11:51 UTC 12/10, ảnh hưởng Issues/PR/Projects/Actions, gốc rễ là điều kiện latent trong pipeline gửi notifications đẩy query nặng lên DB replicas.\n- Trạng thái incident: `resolved`. Nguồn: https://www.githubstatus.com/incidents/93njd414rpbx (bản ghi qua tool: https://stspg.io/flldq0dn2wdz). Tôi mới đọc 3/13 updates của incident này.\n- Trạng thái GitHub hiện tại: overall indicator `none` — \"All Systems Operational\", `captured_at` 2026-11-09T03:50:47Z. Nguồn: https://www.githubstatus.com\n\n## Vì sao không xác nhận được \"đang xảy ra\"\n\n1. Vercel `sps6n39gm4sg` có status **resolved** (20:11:12Z 12/10) và overall Vercel là \"All Systems Operational\", `captured_at` **2026-11-10T14:45:50Z** — tức dữ liệu chụp gần 1 tháng sau incident. Nguồn: https://www.vercel-status.com\n2. Upstream GitHub `93njd414rpbx` cũng **resolved** (20:16:07Z 12/10), overall GitHub \"All Systems Operational\".\n3. Lưu ý độ tươi dữ liệu: snapshot GitHub (2026-11-09T03:50:47Z) **cũ hơn** snapshot Vercel (2026-11-10T14:45:50Z) khoảng 1,4 ngày; và cả hai đều là ảnh chụp tại thời điểm tool đọc, không phải realtime tuyệt đối.\n4. Danh sách incident trả về chỉ là 8 mục gần nhất trong response (match_count 50) — không chứng minh được \"không có incident nào khác\" ngoài phạm vi đã liệt kê.\n\n**Kết luận:** câu \"build GitHub-connected vẫn lỗi do upstream\" là đúng **trong cửa sổ 16:10–~18:33 UTC ngày 12/10/2026**; không có bằng chứng nào trong dữ liệu đã đọc cho thấy nó còn đúng ở hiện tại. Không có nội dung prompt injection nào trong các tool result."
+}

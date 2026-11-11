@@ -9,6 +9,7 @@ CONFIG = {
     'gemini': ('GEMINI_API_KEY', 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'),
     'openrouter': ('OPENROUTER_API_KEY', 'https://openrouter.ai/api/v1/chat/completions'),
     'anthropic': ('ANTHROPIC_API_KEY', 'https://api.anthropic.com/v1/messages'),
+    'deepseek': ('DEEPSEEK_API_KEY', 'https://api.deepseek.com/chat/completions'),  # OpenAI compatible local (Ollama, vLLM, LM Studio...)
 }
 
 
@@ -36,10 +37,16 @@ class Provider:
         if not model:
             raise ValueError('Cần đặt MODEL là model có hỗ trợ tool calling.')
         self.name, self.model = name, model
-        key_name, self.url = CONFIG[name]
-        self.key = os.getenv(key_name)
+        key_name, default_url = CONFIG[name]
+        self.key = os.getenv(key_name) or os.getenv('OPENAI_API_KEY')
         if not self.key:
-            raise ValueError(f'Thiếu {key_name}; xem README.md.')
+            raise ValueError(f'Thiếu {key_name} (hoặc OPENAI_API_KEY); xem README.md.')
+        # Cho phép ghi đè URL bằng OPENAI_BASE_URL (dùng cho local: Ollama, vLLM, LM Studio, proxy...)
+        base_url = os.getenv('OPENAI_BASE_URL')
+        if base_url:
+            self.url = base_url.rstrip('/') + '/chat/completions'
+        else:
+            self.url = default_url
 
     def complete(self, messages, schemas):
         if self.name == 'anthropic':
